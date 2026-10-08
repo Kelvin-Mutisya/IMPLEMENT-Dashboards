@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ranking Distribution Dashboard</title>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8f9fa; padding: 20px; color: #333; }
+        h1 { text-align: center; color: #2c3e50; font-size: 32px; margin-bottom: 5px; }
+        p.subtitle { text-align: center; color: #666; margin-bottom: 30px; font-size: 16px; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; max-width: 1500px; margin: 0 auto; }
+        .card { background: white; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); padding: 20px; }
+        @media (max-width: 1000px) { .grid { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+    <h1>Tool Piloting Voting Distribution</h1>
+    <p class="subtitle">Shows the percentage of votes each tool received for Rank 1 (Best) to Rank 6 (Worst).</p>
+
+    <div class="grid">
+        <div class="card" id="stack_k1"></div>
+        <div class="card" id="stack_k2"></div>
+        <div class="card" id="stack_b1"></div>
+        <div class="card" id="stack_b2"></div>
+    </div>
+
+    <script>
+        const data = {
+            "K1": {"tools": ["Global Scales of Early Dev (GSED)", "Child Handbook Milestones", "Dev Screening Questionnaire", "Predictive Risk Score", "Washington Group / UNICEF", "Red Flag Items"], "stacked": {"1": [42.9, 23.8, 19.0, 9.5, 4.8, 0.0], "2": [33.3, 14.3, 0.0, 19.0, 19.0, 14.3], "3": [9.5, 23.8, 28.6, 14.3, 9.5, 14.3], "4": [9.5, 23.8, 23.8, 19.0, 19.0, 4.8], "5": [4.8, 4.8, 9.5, 19.0, 33.3, 28.6], "6": [0.0, 9.5, 19.0, 19.0, 14.3, 38.1]}}, 
+            "K2": {"tools": ["Child Handbook Milestones", "Global Scales of Early Dev (GSED)", "Predictive Risk Score", "Dev Screening Questionnaire", "Washington Group / UNICEF", "Red Flag Items"], "stacked": {"1": [50.0, 40.0, 5.0, 0.0, 5.0, 0.0], "2": [45.0, 35.0, 10.0, 5.0, 5.0, 0.0], "3": [0.0, 15.0, 40.0, 35.0, 10.0, 0.0], "4": [5.0, 5.0, 20.0, 30.0, 25.0, 15.0], "5": [0.0, 5.0, 10.0, 20.0, 30.0, 35.0], "6": [0.0, 0.0, 15.0, 10.0, 25.0, 50.0]}}, 
+            "B1": {"tools": ["Dev Screening Questionnaire", "Child Handbook Milestones", "Global Scales of Early Dev (GSED)", "Washington Group / UNICEF", "Red Flag Items", "Predictive Risk Score"], "stacked": {"1": [62.5, 12.5, 18.8, 6.2, 0.0, 0.0], "2": [6.2, 68.8, 6.2, 12.5, 6.2, 0.0], "3": [18.8, 6.2, 43.8, 18.8, 12.5, 0.0], "4": [6.2, 0.0, 6.2, 56.2, 18.8, 12.5], "5": [6.2, 6.2, 18.8, 6.2, 12.5, 50.0], "6": [0.0, 6.2, 6.2, 0.0, 50.0, 37.5]}}, 
+            "B2": {"tools": ["Dev Screening Questionnaire", "Global Scales of Early Dev (GSED)", "Child Handbook Milestones", "Washington Group / UNICEF", "Red Flag Items", "Predictive Risk Score"], "stacked": {"1": [30.8, 46.2, 15.4, 7.7, 0.0, 0.0], "2": [53.8, 7.7, 30.8, 7.7, 0.0, 0.0], "3": [7.7, 23.1, 38.5, 30.8, 0.0, 0.0], "4": [7.7, 15.4, 15.4, 53.8, 7.7, 0.0], "5": [0.0, 7.7, 0.0, 0.0, 69.2, 23.1], "6": [0.0, 0.0, 0.0, 0.0, 23.1, 76.9]}}
+        };
+
+        const stackColors = {
+            "1": "#4575b4", "2": "#91bfdb", "3": "#e0f3f8", 
+            "4": "#fee090", "5": "#fc8d59", "6": "#d73027"
+        };
+
+        function drawStacked(divId, dataset, title) {
+            let traces = [];
+            let toolsRev = dataset.tools.slice().reverse();
+
+            for (let rank = 1; rank <= 6; rank++) {
+                traces.push({
+                    x: dataset.stacked[rank.toString()].slice().reverse(),
+                    y: toolsRev,
+                    name: 'Rank ' + rank,
+                    orientation: 'h',
+                    type: 'bar',
+                    marker: { color: stackColors[rank.toString()] }
+                });
+            }
+
+            let layout = {
+                title: { text: title, font: { size: 18 } },
+                barmode: 'stack',
+                xaxis: { title: 'Percentage of Votes (%)', range: [0, 100] },
+                margin: { l: 230, r: 20, t: 50, b: 50 },
+                height: 350,
+                legend: { title: { text: '1 = Best' } }
+            };
+            Plotly.newPlot(divId, traces, layout, {displayModeBar: false});
+        }
+
+        drawStacked('stack_k1', data.K1, 'Kenya - Round 1');
+        drawStacked('stack_k2', data.K2, 'Kenya - Round 2 (Final)');
+        drawStacked('stack_b1', data.B1, 'Botswana - Round 1');
+        drawStacked('stack_b2', data.B2, 'Botswana - Round 2 (Final)');
+    </script>
+</body>
+</html>
